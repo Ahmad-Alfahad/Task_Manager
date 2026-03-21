@@ -23,7 +23,7 @@ export default function Login() {
       await signInWithEmailAndPassword(auth, email, password);
       router.push("/pages/Dashboard");
     } catch (e) {
-      setError(e.message);
+      setError(e instanceof Error ? e.message : "An error occurred");
     } finally {
       setLoading(false);
     }
