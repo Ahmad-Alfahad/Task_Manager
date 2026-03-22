@@ -4,7 +4,7 @@ import { onAuthStateChanged, User } from "firebase/auth";
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import Logout from "../Logout/page";
-import { collection, addDoc, serverTimestamp , query, where, getDocs } from "firebase/firestore";
+import { collection, addDoc, serverTimestamp , query, where, getDocs , deleteDoc   , doc } from "firebase/firestore";
 
 
 export default function Dashboard() {
@@ -75,7 +75,17 @@ export default function Dashboard() {
          alert("Failed to add task. Please try again.");
       }
    }
-
+  
+   const handleDelete = async ( userId ) => {
+      try {
+         await deleteDoc(doc(db, "tasks", userId));
+         setTasks((prevTasks) => prevTasks.filter((task) => task.id !== userId));
+      }
+      catch(e) {
+         console.error("Error deleting task: ", e);
+         alert("Failed to delete task. Please try again.");
+      }
+   } 
 
 
 
@@ -97,6 +107,7 @@ export default function Dashboard() {
          {tasks.map((task) => (
             <div key={task.id}>
                <p>{task.title}</p>
+               <button onClick={() => handleDelete(task.id)}>Delete</button>
             </div>
          ))}
          <button onClick={handleAddTask}>Add Task</button>
