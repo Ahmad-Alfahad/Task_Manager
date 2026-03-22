@@ -13,7 +13,7 @@ export default function Dashboard() {
    const [user, setUser] = useState<User | null>(null);
    const [task, setTask] = useState("");
    const [tasks, setTasks] = useState<any[]>([]);
-
+   const [filter, setFilter] = useState("all");
 
    useEffect(() => {
       if (!user) return;
@@ -99,6 +99,11 @@ export default function Dashboard() {
 
 
 
+const filteredTasks = tasks.filter((task) => {
+  if (filter === "active") return !task.completed;
+  if (filter === "completed") return task.complete;
+  return true;
+});
 
 
    return (
@@ -106,6 +111,9 @@ export default function Dashboard() {
       <>
          <h1>Dashboard test</h1>
          <p>welcome {user.email}</p>
+         <button onClick={() => setFilter("all")}>All</button>
+         <button onClick={() => setFilter("active")}>Active</button>
+         <button onClick={() => setFilter("completed")}>Completed</button>
          <h3>{loading ? "Loading..." : "Dashboard Content"}</h3>
          <input
             type="text"
@@ -113,7 +121,7 @@ export default function Dashboard() {
             value={task}
             onChange={(e) => setTask(e.target.value)}
          />
-         {tasks.map((task) => (
+         {filteredTasks.map((task) => (
             <div key={task.id}>
 
                <input
