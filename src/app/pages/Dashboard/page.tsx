@@ -14,6 +14,8 @@ export default function Dashboard() {
    const [task, setTask] = useState("");
    const [tasks, setTasks] = useState<any[]>([]);
    const [filter, setFilter] = useState("all");
+   const [search, setSearch] = useState("");
+   const [sort , setSort] = useState("newest");
 
    useEffect(() => {
       if (!user) return;
@@ -99,18 +101,34 @@ export default function Dashboard() {
 
 
 
-const filteredTasks = tasks.filter((task) => {
-  if (filter === "active") return !task.completed;
-  if (filter === "completed") return task.complete;
-  return true;
-});
+   const filteredTasks = tasks.filter((task) => {
+      if (filter === "active") return !task.complete;
+      if (filter === "completed") return task.complete;
+      return true;
+   }).filter((task) => task.title.toLowerCase().includes(search.toLowerCase()));
 
+const sortedTasks = [...filteredTasks].sort((a, b) => {
+  if (sort === "newest") {
+    return b.createdAt?.seconds - a.createdAt?.seconds;
+  } else {
+    return a.createdAt?.seconds - b.createdAt?.seconds;
+  }
+});
 
    return (
 
       <>
          <h1>Dashboard test</h1>
          <p>welcome {user.email}</p>
+         <select onChange={(e) => setSort(e.target.value)}>
+  <option value="newest">Newest</option>
+  <option value="oldest">Oldest</option>
+</select>
+         <input
+            placeholder="Search..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+         />
          <button onClick={() => setFilter("all")}>All</button>
          <button onClick={() => setFilter("active")}>Active</button>
          <button onClick={() => setFilter("completed")}>Completed</button>
@@ -121,7 +139,7 @@ const filteredTasks = tasks.filter((task) => {
             value={task}
             onChange={(e) => setTask(e.target.value)}
          />
-         {filteredTasks.map((task) => (
+         {sortedTasks.map((task) => (
             <div key={task.id}>
 
                <input
