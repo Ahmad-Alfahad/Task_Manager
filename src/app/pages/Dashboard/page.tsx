@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import Logout from "../Logout/page";
 import { collection, addDoc, serverTimestamp, query, where, getDocs, deleteDoc, updateDoc, doc } from "firebase/firestore";
-
+import { motion } from "framer-motion";
+import { AnimatePresence } from "framer-motion";
 
 export default function Dashboard() {
    const router = useRouter();
@@ -15,7 +16,7 @@ export default function Dashboard() {
    const [tasks, setTasks] = useState<any[]>([]);
    const [filter, setFilter] = useState("all");
    const [search, setSearch] = useState("");
-   const [sort , setSort] = useState("newest");
+   const [sort, setSort] = useState("newest");
 
    useEffect(() => {
       if (!user) return;
@@ -103,65 +104,190 @@ export default function Dashboard() {
 
    const filteredTasks = tasks.filter((task) => {
       if (filter === "active") return !task.complete;
-      if (filter === "completed") return task.complete;
+      if (filter === "complete") return task.complete;
       return true;
    }).filter((task) => task.title.toLowerCase().includes(search.toLowerCase()));
 
-const sortedTasks = [...filteredTasks].sort((a, b) => {
-  if (sort === "newest") {
-    return b.createdAt?.seconds - a.createdAt?.seconds;
-  } else {
-    return a.createdAt?.seconds - b.createdAt?.seconds;
-  }
-});
+   const sortedTasks = [...filteredTasks].sort((a, b) => {
+      if (sort === "newest") {
+         return b.createdAt?.seconds - a.createdAt?.seconds;
+      } else {
+         return a.createdAt?.seconds - b.createdAt?.seconds;
+      }
+   });
+
+   const total = tasks.length;
+   const completed = tasks.filter(t => t.complete).length;
+   const progress = total === 0 ? 0 : (completed / total) * 100;
+
+   let color = "bg-red-500";
+
+   if (progress > 70) color = "bg-green-500";
+   else if (progress > 30) color = "bg-yellow-500";
 
    return (
 
-      <>
-         <h1>Dashboard test</h1>
-         <p>welcome {user.email}</p>
-         <select onChange={(e) => setSort(e.target.value)}>
-  <option value="newest">Newest</option>
-  <option value="oldest">Oldest</option>
-</select>
-         <input
-            placeholder="Search..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-         />
-         <button onClick={() => setFilter("all")}>All</button>
-         <button onClick={() => setFilter("active")}>Active</button>
-         <button onClick={() => setFilter("completed")}>Completed</button>
-         <h3>{loading ? "Loading..." : "Dashboard Content"}</h3>
-         <input
-            type="text"
-            placeholder="Enter a new task"
-            value={task}
-            onChange={(e) => setTask(e.target.value)}
-         />
-         {sortedTasks.map((task) => (
-            <div key={task.id}>
 
+      <div className="min-h-screen  bg-gray-100 w-full">
+         <div className="m-8 bg-gray-200 relative rounded-lg shadow p-6">
+            <div className="flex justify-between items-center p-2 ">
+               <h1 className="text-xl font-bold">Task Manager</h1>
+
+               <Logout />
+            </div>
+
+
+            <div bg-rounded-lg p-7 className="flex gap-4 m-4 ">
                <input
-                  type="checkbox"
-                  checked={task.complete}
-                  onChange={() => handleToggleComplete(task)}
+                  value={task}
+                  onChange={(e) => setTask(e.target.value)}
+                  placeholder="Add new task..."
+                  className="flex-1 border rounded px-3 py-2"
+               />
+               <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleAddTask}
+                  className="bg-blue-500 text-white px-4 py-2 rounded"
+               >
+                  Add
+               </motion.button>
+            </div>
+
+
+            <div className="flex justify-between items-center p-4">
+
+               <div className="flex gap-2">
+                  <motion.button
+                     whileHover={{ scale: 1.05 }}
+                     whileTap={{ scale: 0.95 }}
+                     onClick={() => setFilter("all")}
+                     className="bg-blue-500 text-white px-4 py-2 rounded"
+                  >
+                     All
+                  </motion.button>
+                  <motion.button
+                     whileHover={{ scale: 1.05 }}
+                     whileTap={{ scale: 0.95 }}
+                     onClick={() => setFilter("active")}
+                     className="bg-blue-500 text-white px-4 py-2 rounded"
+                  >
+                     Active
+                  </motion.button>
+                  <motion.button
+                     whileHover={{ scale: 1.05 }}
+                     whileTap={{ scale: 0.95 }}
+                     onClick={() => setFilter("complete")}
+                     className="bg-blue-500 text-white px-4 py-2 rounded"
+                  >
+                     Done
+                  </motion.button>
+               </div>
+               <div className="flex gap-2 bg-gray-200 p-1 rounded-lg w-fit relative">
+
+                  <motion.div
+                     layout
+                     className="absolute bg-white rounded-md shadow h-full"
+                     style={{
+                        width: sort === "newest" ? "90px" : "90px",
+                        left: sort === "newest" ? 0 : "95px"
+                     }}
+                  />
+
+                  <button
+                     onClick={() => setSort("newest")}
+                     className="px-3 py-1 text-sm relative z-10"
+                  >
+                     ⬇Newest
+                  </button>
+
+                  <button
+                     onClick={() => setSort("oldest")}
+                     className="px-3 py-1 text-sm relative z-10"
+                  >
+                     ⬆Oldest
+                  </button>
+
+               </div>
+               <input
+                  placeholder="Search..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="border px-3 py-1 rounded"
                />
 
-               <span style={{
-                  textDecoration: task.complete ? "line-through" : "none"
-               }}>
-                  {task.title}
-               </span>
-
-               <button onClick={() => handleDelete(task.id)}>
-                  Delete
-               </button>
 
             </div>
-         ))}
-         <button onClick={handleAddTask}>Add Task</button>
-         <Logout />
-      </>
+
+
+
+
+
+            <div className="p-4 space-y-2 max-h-[290px] overflow-y-auto">
+               <AnimatePresence>
+                  {sortedTasks.map((task) => (
+                     <motion.div
+                        key={task.id}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                        transition={{ duration: 0.2 }}
+                        className=" flex items-center justify-between p-2 bg-white rounded shadow hover:shadow-lg transition duration-200"
+                     >
+                        <div className="flex items-center gap-2">
+                           <motion.input
+                              type="checkbox"
+                              checked={task.complete}
+                              onChange={() => handleToggleComplete(task)}
+                              whileTap={{ scale: 1.2 }}
+                           />
+
+                           <span
+                              className={`${task.complete ? " text-gray-400" : ""
+                                 }`}
+                           >
+                              {task.title}
+                           </span>
+                        </div>
+
+                        <motion.button
+                           whileHover={{ scale: 1.05 }}
+                           whileTap={{ scale: 0.95 }}
+                           onClick={() => handleDelete(task.id)}
+                           className="bg-blue-500 text-white px-4 py-2 rounded"
+                        >
+                           Delete
+                        </motion.button>
+                     </motion.div>
+
+                  ))
+
+                  }</AnimatePresence>
+
+
+            </div>
+
+
+
+            <motion.span
+
+               initial={{ scale: 0.8, opacity: 0 }}
+               animate={{ scale: 1, opacity: 1 }}
+               className="px-3 py-1 bg-gray-200 rounded-full text-sm absolute bottom-0 left-0"
+            >
+               Total tasks: {sortedTasks.length}
+            </motion.span>
+
+
+            <div className={`w-full bg-red-200 mb-4 rounded-full h-2 ${color} relative`}>
+               <motion.div
+                  className="bg-green-500 h-2 rounded-full"
+                  initial={{ width: 0 }}
+                  animate={{ width: `${progress}%` }}
+                  transition={{ duration: 0.4 }}
+               />
+            </div>
+         </div>
+      </div>
    )
 }
