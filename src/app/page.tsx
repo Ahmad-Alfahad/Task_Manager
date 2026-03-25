@@ -1,6 +1,7 @@
 'use client' ;
 
 import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
 export default function Home() {
   const router = useRouter() ;
   //router.push("/pages/Login") ;
@@ -10,12 +11,23 @@ export default function Home() {
         Welcome to Task Manager App
 
       </h1>
-      <button onClick={() => router.push("/pages/Login")}>
-        Go to Login
-      </button>
-      <button onClick={() => router.push("/pages/Registeration")}>
-        Go to Registeration
-      </button>
+    <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => router.push("/pages/Login")}
+                  className="bg-blue-500 text-white px-4 py-2 rounded m-4"
+               >
+                  Login
+               </motion.button>
+
+      <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => router.push("/pages/Registeration")}
+                  className="bg-green-500 text-white px-4 py-2 rounded"
+               >
+                  Register
+               </motion.button>
     </div>
   );
 }
